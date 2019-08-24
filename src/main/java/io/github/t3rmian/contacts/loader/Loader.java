@@ -2,10 +2,10 @@ package io.github.t3rmian.contacts.loader;
 
 import java.io.InputStream;
 
-public interface Loader<I, O> {
+public interface Loader<O> {
     void parseInput(InputStream inputStream);
 
-    O mapToDataRecord(I input);
+    void fireRecordLoad(O output);
 
-    void loadDataRecord(O output);
+    void setErrorHandler(ErrorHandler errorHandler);
 }

@@ -2,48 +2,57 @@ package io.github.t3rmian.contacts.loader;
 
 import io.github.t3rmian.contacts.model.Contact;
 import org.apache.commons.validator.routines.EmailValidator;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 public class ContactMapper {
+
+    public Contact mapToContact(String type, String value) {
+        Contact contact = new Contact();
+        try {
+            contact.setType(Contact.Type.valueOf(type.toUpperCase()));
+        } catch (IllegalArgumentException iae) {
+            contact.setType(Contact.Type.UNKNOWN);
+        }
+        contact.setContact(value);
+        return contact;
+    }
+
     public Contact mapToContact(String unknownContact) {
         Contact contact = new Contact();
-        contact.setContact(unknownContact);
         contact.setType(guessContactType(unknownContact));
+        contact.setContact(unknownContact);
         return contact;
     }
 
     private Contact.Type guessContactType(String unknownContact) {
         if (EmailValidator.getInstance(false).isValid(unknownContact)) {
             return Contact.Type.EMAIL;
-        }
-
-        String phoneRegex = "^\\+?[0-9. ()-]{10,25}$";
-        Pattern phonePattern = Pattern.compile(phoneRegex);
-        Matcher phoneMatcher = phonePattern.matcher(unknownContact);
-        if (phoneMatcher.matches()) {
+        } else if (containsPhoneNumber(unknownContact)) {
             return Contact.Type.PHONE;
-        }
-
-        String icqRegex = "^([0-9]-?){7,8}[0-9]$";
-        Pattern icqPattern = Pattern.compile(icqRegex);
-        Matcher icqMatcher = icqPattern.matcher(icqRegex);
-        if (icqMatcher.matches()) {
+        } else if (isJid(unknownContact)) {
+            return Contact.Type.JABBER;
+        } else {
             return Contact.Type.UNKNOWN;
         }
+    }
 
-        String jabberRegex = "^(?:([^@/<>'\\\"]+)@)?([^@/<>'\\\"]+)(?:/([^<>'\\\"]*))?$\n";
-        Pattern jabberPattern = Pattern.compile(jabberRegex);
-        Matcher jabberMatcher = jabberPattern.matcher(jabberRegex);
-        if (jabberMatcher.matches()) {
-            return Contact.Type.JABBER;
+    /**
+     * @param unknownContact customer contact
+     * @return true if unknownContact contains valid local or international number (5-15 digits) after removing any
+     * context (non numeric characters).
+     */
+    private boolean containsPhoneNumber(String unknownContact) {
+        String sanitizedContact = unknownContact.replaceAll("[^0-9]", "");
+        return sanitizedContact.length() >= 5 && sanitizedContact.length() <= 15;
+    }
+
+    private boolean isJid(String unknownContact) {
+        try {
+            JidCreate.from(unknownContact);
+            return true;
+        } catch (IllegalArgumentException | XmppStringprepException e) {
+            return false;
         }
-
-        return Contact.Type.UNKNOWN;
-        /**
-         * TODO: There are overlapping regexes, test and consider setting them to unknown?
-         * TODO: Maybe it will be selected by the user? Think about it.
-         */
     }
 }

@@ -1,21 +1,12 @@
 package io.github.t3rmian.contacts.model;
 
 public class Contact {
-    private Long id;
     private Contact.Type type;
     private Long customerId;
     private String contact;
 
     public enum Type {
         UNKNOWN, EMAIL, PHONE, JABBER
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Type getType() {

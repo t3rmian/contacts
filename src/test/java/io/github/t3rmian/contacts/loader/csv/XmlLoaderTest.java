@@ -1,9 +1,13 @@
 package io.github.t3rmian.contacts.loader.csv;
 
+import io.github.t3rmian.contacts.loader.LoadListener;
+import io.github.t3rmian.contacts.loader.ErrorHandler;
+import io.github.t3rmian.contacts.loader.Loader;
 import io.github.t3rmian.contacts.loader.xml.XmlLoader;
 import io.github.t3rmian.contacts.model.Contact;
 import io.github.t3rmian.contacts.model.Customer;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -15,7 +19,8 @@ import java.util.Objects;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class XmlLoaderTest {
 
@@ -92,7 +97,58 @@ class XmlLoaderTest {
     }
 
     @Test
-    void loadDataRecord() {
-        //TODO: consider removing
+    void mapToDataRecord_InvalidFormat() {
+        String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<persons>\n" +
+                "    <person>\n" +
+                "        <age>12</age>\n" +
+                "        <city>Lublin</city>\n" +
+                "        <contacts>\n" +
+                "            <phone>123123123</phone>\n" +
+                "            <phone>654 765 765</phone>\n" +
+                "            <email>kowalski@gmail.com</email>\n" +
+                "            <email>jan@gmail.com</email>\n" +
+                "        </contacts>\n" +
+                "    </person>\n" +
+                "</persons>";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        Loader loader = new XmlLoader((customer) -> fail());
+        ErrorHandler errorHandler = mock(ErrorHandler.class);
+        loader.setErrorHandler(errorHandler);
+        loader.parseInput(inputStream);
+        verify(errorHandler, times(1)).handleError(eq(1L), any());
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void mapToDataRecord_InvalidFormat_SkipAndContinue() {
+        String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<persons>\n" +
+                "    <person>\n" +
+                "        <name>First</name>\n" +
+                "        <surname>Kowalski</surname>\n" +
+                "        <age>12</age>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <name>Second</name>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <name>Third</name>\n" +
+                "        <surname>Kowalski</surname>\n" +
+                "        <age>12</age>\n" +
+                "    </person>\n" +
+                "</persons>";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
+        new XmlLoader(loadListener).parseInput(inputStream);
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());
+        assertThat(customerCaptor.getAllValues(), hasItem(
+                hasProperty("name", equalTo("First"))
+        ));
+        assertThat(customerCaptor.getAllValues(), hasItem(
+                hasProperty("name", equalTo("Third"))
+        ));
     }
 }

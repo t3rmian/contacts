@@ -1,7 +1,10 @@
 package io.github.t3rmian.contacts.loader.csv;
 
+import io.github.t3rmian.contacts.loader.LoadListener;
+import io.github.t3rmian.contacts.loader.ErrorHandler;
 import io.github.t3rmian.contacts.model.Customer;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -13,7 +16,8 @@ import java.util.Objects;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class CsvLoaderTest {
 
@@ -62,7 +66,32 @@ class CsvLoaderTest {
     }
 
     @Test
-    void loadDataRecord() {
-        //TODO: consider removing
+    void mapToDataRecord_InvalidFormat_CallErrorHandler() {
+        String input = "Invalid format";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        CsvLoader csvLoader = new CsvLoader((customer) -> fail());
+        ErrorHandler errorHandler = mock(ErrorHandler.class);
+        csvLoader.setErrorHandler(errorHandler);
+        csvLoader.parseInput(inputStream);
+        verify(errorHandler, times(1)).handleError(eq(1L), any());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void mapToDataRecord_InvalidFormat_SkipAndContinue() {
+        String input = "First,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com\n" +
+                "Second -> Missing required values\n" +
+                "Third,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
+        new CsvLoader(loadListener).parseInput(inputStream);
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());
+        assertThat(customerCaptor.getAllValues(), hasItem(
+                hasProperty("name", equalTo("First"))
+        ));
+        assertThat(customerCaptor.getAllValues(), hasItem(
+                hasProperty("name", equalTo("Third"))
+        ));
     }
 }

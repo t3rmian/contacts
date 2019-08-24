@@ -12,7 +12,7 @@ import java.util.Collections;
 
 class CustomerDAOIT {
 
-    private final AbstractDAO testDAO = new AbstractDAO() {
+    private final AbstractDao testDAO = new AbstractDao() {
     };
 
     @AfterEach
@@ -44,7 +44,7 @@ class CustomerDAOIT {
 
     @Test
     void testSave() throws SQLException {
-        CustomerDAO dao = new CustomerDAO();
+        CustomerDao dao = new CustomerDao();
         Customer customer = new Customer();
         customer.setName("Damian");
         customer.setSurname("Terlecki");
@@ -54,7 +54,7 @@ class CustomerDAOIT {
 
     @Test
     void testSaveWithContact() throws SQLException {
-        CustomerDAO dao = new CustomerDAO();
+        CustomerDao dao = new CustomerDao();
         Customer customer = new Customer();
         customer.setName("Damian");
         customer.setSurname("Terlecki");

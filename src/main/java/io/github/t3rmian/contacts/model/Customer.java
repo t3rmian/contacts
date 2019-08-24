@@ -4,19 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Customer {
-    private Long id;
     private String name;
     private String surname;
     private Integer age;
     private List<Contact> contacts;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
