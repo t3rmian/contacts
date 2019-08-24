@@ -18,17 +18,27 @@ class CustomerDAOIT {
     @AfterEach
     void cleanUp() throws SQLException {
         Connection connection = testDAO.getConnection();
-        ResultSet toDeleteResultCount = connection.createStatement()
+        ResultSet contactsToDeleteResultCount = connection.createStatement()
+                .executeQuery("SELECT COUNT(*) FROM CONTACTS");
+        int contacts = 0;
+        if (contactsToDeleteResultCount.next()) {
+            contacts = contactsToDeleteResultCount.getInt(1);
+        }
+        ResultSet customersToDeleteResultCount = connection.createStatement()
                 .executeQuery("SELECT COUNT(*) FROM CUSTOMERS");
         int customers = 0;
-        if (toDeleteResultCount.next()) {
-            customers = toDeleteResultCount.getInt(1);
+        if (customersToDeleteResultCount.next()) {
+            customers = customersToDeleteResultCount.getInt(1);
         }
 
+        connection
+                .prepareStatement("DELETE FROM CONTACTS")
+                .executeUpdate();
         connection
                 .prepareStatement("DELETE FROM CUSTOMERS")
                 .executeUpdate();
 
+        System.out.println("Cleaned up " + contacts + " contacts");
         System.out.println("Cleaned up " + customers + " customers");
     }
 
@@ -39,7 +49,7 @@ class CustomerDAOIT {
         customer.setName("Damian");
         customer.setSurname("Terlecki");
         customer.setAge(99);
-        dao.save(Collections.singletonList(customer));
+        dao.batchSaveAll(Collections.singletonList(customer));
     }
 
     @Test
@@ -53,6 +63,6 @@ class CustomerDAOIT {
         contact.setType(Contact.Type.UNKNOWN);
         contact.setContact("abc");
         customer.setContacts(Collections.singletonList(contact));
-        dao.save(Collections.singletonList(customer));
+        dao.batchSaveAll(Collections.singletonList(customer));
     }
 }

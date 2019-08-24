@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CustomerDAO extends AbstractDAO {
 
-    void save(List<Customer> customers) throws SQLException {
+    void batchSaveAll(List<Customer> customers) throws SQLException {
         String sql = "insert into CUSTOMERS (NAME, SURNAME, AGE) values (?, ?, ?)";
         Connection connection = getConnection();
         connection.setAutoCommit(false);
