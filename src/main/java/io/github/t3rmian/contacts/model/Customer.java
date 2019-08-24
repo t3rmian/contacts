@@ -1,5 +1,6 @@
 package io.github.t3rmian.contacts.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Customer {
@@ -42,6 +43,7 @@ public class Customer {
     }
 
     public List<Contact> getContacts() {
+        if (contacts == null) return new ArrayList<>();
         return contacts;
     }
 
