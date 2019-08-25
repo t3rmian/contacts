@@ -5,11 +5,9 @@ import io.github.t3rmian.contacts.dao.CustomerBatchManager;
 import io.github.t3rmian.contacts.dao.CustomerDao;
 import io.github.t3rmian.contacts.data.Customer;
 import io.github.t3rmian.contacts.loader.*;
-import io.github.t3rmian.contacts.loader.exception.ApplicationException;
 import org.apache.commons.cli.*;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.BasicConfigurator;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,12 +35,12 @@ public class Application {
                 .build();
         Option errorOption = Option.builder("e")
                 .required(false)
-                .desc("Error output (not implemented)")
+                .desc("Error output [not implemented]")
                 .longOpt("error")
                 .build();
         Option batchSizeOption = Option.builder("b")
                 .required(false)
-                .desc("Batch size")
+                .desc("Batch size [default 10000]")
                 .longOpt("size")
                 .hasArg()
                 .build();
@@ -56,6 +54,7 @@ public class Application {
             CommandLine cmd = parser.parse(options, args);
             invoke(cmd);
         } catch (ParseException e) {
+            System.err.println(e.getMessage());
             displayUsage(options);
         }
     }
@@ -64,24 +63,8 @@ public class Application {
         String type = cmd.getOptionValue("type");
         String size = cmd.getOptionValue("size");
         String input = cmd.getOptionValue("input");
-        RecordErrorHandler errorHandler = new RecordErrorHandler() {
-            @Override
-            public void handleError(int from, int to, ApplicationException exception) {
-                LoggerFactory.getLogger(Application.class).error(
-                        String.format("Could not import records range: <%d,%d>", from, to),
-                        exception
-                );
-            }
-
-            @Override
-            public void handleError(long record, ApplicationException exception) {
-                LoggerFactory.getLogger(Application.class).error(
-                        String.format("Could not import record: %d", record),
-                        exception
-                );
-            }
-        };
-        int batchSize = 10000;
+        RecordErrorHandler errorHandler = new LogErrorHandler();
+        int batchSize = CustomerBatchManager.DEFAULT_BATCH_SIZE;
         if (size != null) {
             try {
                 batchSize = Integer.parseInt(size);
@@ -117,4 +100,5 @@ public class Application {
                         + "\t-D" + AbstractDao.DATABASE_USER_KEY + "=..."
                         + "\t-D" + AbstractDao.DATABASE_PASSWORD_KEY + "=...");
     }
+
 }

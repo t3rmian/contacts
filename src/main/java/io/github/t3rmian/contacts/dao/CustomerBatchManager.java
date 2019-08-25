@@ -13,6 +13,8 @@ import java.util.List;
  * Collects read records into batches for database insert
  */
 public class CustomerBatchManager implements RecordLoadListener<Customer> {
+    public static final int DEFAULT_BATCH_SIZE = 10000;
+
     private final CustomerDao customerDao;
     private final RecordErrorHandler errorHandler;
     private final int batchSize;
