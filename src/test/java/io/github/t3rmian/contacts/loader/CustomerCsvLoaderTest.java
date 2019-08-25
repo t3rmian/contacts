@@ -1,7 +1,5 @@
-package io.github.t3rmian.contacts.loader.csv;
+package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.loader.LoadListener;
-import io.github.t3rmian.contacts.loader.ErrorHandler;
 import io.github.t3rmian.contacts.model.Customer;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -16,16 +14,18 @@ import java.util.Objects;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-class CsvLoaderTest {
+class CustomerCsvLoaderTest {
 
     @Test
     void parseFile() {
         List<Customer> parsedCustomers = new ArrayList<>();
         InputStream file = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("test-data.csv"));
-        new CsvLoader(parsedCustomers::add).parseInput(file);
+        new CustomerCsvLoader(parsedCustomers::add).parseInput(file);
         assertEquals(2, parsedCustomers.size());
     }
 
@@ -33,7 +33,7 @@ class CsvLoaderTest {
     void mapToDataRecord() {
         String input = "Jan,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        new CsvLoader(customer -> {
+        new CustomerCsvLoader(customer -> {
             assertEquals("Jan", customer.getName());
             assertEquals("Kowalski", customer.getSurname());
             assertEquals(12, customer.getAge());
@@ -44,7 +44,7 @@ class CsvLoaderTest {
     void mapToContacts() {
         String input = "Jan,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        new CsvLoader(customer -> {
+        new CustomerCsvLoader(customer -> {
             assertEquals(4, customer.getContacts().size());
             assertThat(customer.getContacts(), hasItem(allOf(
                     hasProperty("contact", equalTo("123123123")),
@@ -69,10 +69,10 @@ class CsvLoaderTest {
     void mapToDataRecord_InvalidFormat_CallErrorHandler() {
         String input = "Invalid format";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        CsvLoader csvLoader = new CsvLoader((customer) -> fail());
+        CustomerCsvLoader customerCsvLoader = new CustomerCsvLoader((customer) -> fail());
         ErrorHandler errorHandler = mock(ErrorHandler.class);
-        csvLoader.setErrorHandler(errorHandler);
-        csvLoader.parseInput(inputStream);
+        customerCsvLoader.setErrorHandler(errorHandler);
+        customerCsvLoader.parseInput(inputStream);
         verify(errorHandler, times(1)).handleError(eq(1L), any());
     }
 
@@ -84,7 +84,7 @@ class CsvLoaderTest {
                 "Third,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
-        new CsvLoader(loadListener).parseInput(inputStream);
+        new CustomerCsvLoader(loadListener).parseInput(inputStream);
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());
         assertThat(customerCaptor.getAllValues(), hasItem(

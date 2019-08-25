@@ -1,9 +1,5 @@
-package io.github.t3rmian.contacts.loader.csv;
+package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.loader.ContactMapper;
-import io.github.t3rmian.contacts.loader.LoadListener;
-import io.github.t3rmian.contacts.loader.ErrorHandler;
-import io.github.t3rmian.contacts.loader.Loader;
 import io.github.t3rmian.contacts.loader.exception.ParsingException;
 import io.github.t3rmian.contacts.model.Customer;
 
@@ -14,13 +10,13 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CsvLoader implements Loader<Customer> {
+public class CustomerCsvLoader implements Loader<Customer> {
 
     private final ContactMapper contactMapper = new ContactMapper();
     private final LoadListener<Customer> loadListener;
     private ErrorHandler errorHandler;
 
-    public CsvLoader(LoadListener<Customer> loadListener) {
+    public CustomerCsvLoader(LoadListener<Customer> loadListener) {
         this.loadListener = loadListener;
     }
 

@@ -4,6 +4,7 @@ import io.github.t3rmian.contacts.model.Contact;
 import io.github.t3rmian.contacts.model.Customer;
 
 import java.sql.*;
+import java.util.Iterator;
 import java.util.List;
 
 public class CustomerDao extends AbstractDao {
@@ -16,12 +17,15 @@ public class CustomerDao extends AbstractDao {
                 batchSaveAllCustomers(customers, customerStatement);
                 ResultSet generatedKeys = customerStatement.getGeneratedKeys();
 
-                String contactSql = "insert into CONTACTS (ID_CUSTOMERS, CONTACT, TYPE) values (?, ?, ?)";
+                String contactSql = "insert into CONTACTS (ID_CUSTOMER, CONTACT, TYPE) values (?, ?, ?)";
                 try (PreparedStatement contactStatement = connection.prepareStatement(contactSql)) {
                     batchSaveAllContacts(customers, generatedKeys, contactStatement);
                 }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
             }
-            connection.commit();
         }
     }
 
@@ -29,16 +33,17 @@ public class CustomerDao extends AbstractDao {
         for (Customer customer : customers) {
             ps.setString(1, customer.getName());
             ps.setString(2, customer.getSurname());
-            ps.setInt(3, customer.getAge());
+            ps.setObject(3, customer.getAge(), Types.INTEGER);
             ps.addBatch();
         }
         ps.executeBatch();
     }
 
     private void batchSaveAllContacts(List<Customer> customers, ResultSet generatedKeys, PreparedStatement ps) throws SQLException {
+        Iterator<Customer> customerIterator = customers.iterator();
         while (generatedKeys.next()) {
             long parentId = generatedKeys.getLong(1);
-            Customer customer = customers.iterator().next();
+            Customer customer = customerIterator.next();
             for (Contact contact : customer.getContacts()) {
                 ps.setLong(1, parentId);
                 ps.setString(2, contact.getContact());

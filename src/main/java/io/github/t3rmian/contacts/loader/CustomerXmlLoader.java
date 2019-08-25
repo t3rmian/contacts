@@ -1,4 +1,4 @@
-package io.github.t3rmian.contacts.loader.xml;
+package io.github.t3rmian.contacts.loader;
 
 import io.github.t3rmian.contacts.loader.ContactMapper;
 import io.github.t3rmian.contacts.loader.LoadListener;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class XmlLoader extends DefaultHandler implements Loader<Customer> {
+public class CustomerXmlLoader extends DefaultHandler implements Loader<Customer> {
     private final ContactMapper contactMapper = new ContactMapper();
     private Customer customer;
     private StringBuilder data;
@@ -39,7 +39,7 @@ public class XmlLoader extends DefaultHandler implements Loader<Customer> {
 
     private ErrorHandler errorHandler;
 
-    public XmlLoader(LoadListener<Customer> loadListener) {
+    public CustomerXmlLoader(LoadListener<Customer> loadListener) {
         this.loadListener = loadListener;
     }
 

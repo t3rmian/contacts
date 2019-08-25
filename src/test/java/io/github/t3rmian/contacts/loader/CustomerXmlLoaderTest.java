@@ -1,9 +1,5 @@
-package io.github.t3rmian.contacts.loader.csv;
+package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.loader.LoadListener;
-import io.github.t3rmian.contacts.loader.ErrorHandler;
-import io.github.t3rmian.contacts.loader.Loader;
-import io.github.t3rmian.contacts.loader.xml.XmlLoader;
 import io.github.t3rmian.contacts.model.Contact;
 import io.github.t3rmian.contacts.model.Customer;
 import org.junit.jupiter.api.Test;
@@ -19,16 +15,18 @@ import java.util.Objects;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-class XmlLoaderTest {
+class CustomerXmlLoaderTest {
 
     @Test
     void parseFile() {
         List<Customer> parsedCustomers = new ArrayList<>();
         InputStream file = Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("test-data.xml"));
-        new XmlLoader(parsedCustomers::add).parseInput(file);
+        new CustomerXmlLoader(parsedCustomers::add).parseInput(file);
         assertEquals(2, parsedCustomers.size());
     }
 
@@ -50,7 +48,7 @@ class XmlLoaderTest {
                 "    </person>\n" +
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        new XmlLoader(customer -> {
+        new CustomerXmlLoader(customer -> {
             assertEquals("Jan", customer.getName());
             assertEquals("Kowalski", customer.getSurname());
             assertEquals(12, customer.getAge());
@@ -75,7 +73,7 @@ class XmlLoaderTest {
                 "    </person>\n" +
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        new XmlLoader(customer -> {
+        new CustomerXmlLoader(customer -> {
             assertEquals(4, customer.getContacts().size());
             assertThat(customer.getContacts(), hasItem(allOf(
                     hasProperty("contact", equalTo("123123123")),
@@ -112,7 +110,7 @@ class XmlLoaderTest {
                 "    </person>\n" +
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        Loader loader = new XmlLoader((customer) -> fail());
+        Loader loader = new CustomerXmlLoader((customer) -> fail());
         ErrorHandler errorHandler = mock(ErrorHandler.class);
         loader.setErrorHandler(errorHandler);
         loader.parseInput(inputStream);
@@ -141,7 +139,7 @@ class XmlLoaderTest {
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
-        new XmlLoader(loadListener).parseInput(inputStream);
+        new CustomerXmlLoader(loadListener).parseInput(inputStream);
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());
         assertThat(customerCaptor.getAllValues(), hasItem(
