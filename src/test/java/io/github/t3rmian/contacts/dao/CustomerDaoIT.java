@@ -1,7 +1,7 @@
 package io.github.t3rmian.contacts.dao;
 
-import io.github.t3rmian.contacts.model.Contact;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.data.Contact;
+import io.github.t3rmian.contacts.data.Customer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

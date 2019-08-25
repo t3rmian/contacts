@@ -1,22 +1,26 @@
 package io.github.t3rmian.contacts.dao;
 
-import io.github.t3rmian.contacts.loader.LoadListener;
-import io.github.t3rmian.contacts.loader.ErrorHandler;
+import io.github.t3rmian.contacts.loader.RecordLoadListener;
+import io.github.t3rmian.contacts.loader.RecordErrorHandler;
 import io.github.t3rmian.contacts.loader.exception.DatabaseException;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.data.Customer;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerBatchManager implements LoadListener<Customer> {
+/**
+ * Collects read records into batches for database insert
+ */
+public class CustomerBatchManager implements RecordLoadListener<Customer> {
+    private final CustomerDao customerDao;
+    private final RecordErrorHandler errorHandler;
     private final int batchSize;
-    private final ErrorHandler errorHandler;
     private List<Customer> customers = new ArrayList<>();
-    private CustomerDao customerDao = new CustomerDao();
     private int recordNumber;
 
-    public CustomerBatchManager(ErrorHandler errorHandler, int batchSize) {
+    public CustomerBatchManager(CustomerDao customerDao, RecordErrorHandler errorHandler, int batchSize) {
+        this.customerDao = customerDao;
         this.errorHandler = errorHandler;
         this.batchSize = batchSize;
     }

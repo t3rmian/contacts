@@ -1,4 +1,4 @@
-package io.github.t3rmian.contacts.model;
+package io.github.t3rmian.contacts.data;
 
 public class Contact {
     private Contact.Type type;

@@ -1,7 +1,8 @@
 package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.model.Contact;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.loader.exception.ParsingException;
+import io.github.t3rmian.contacts.data.Contact;
+import io.github.t3rmian.contacts.data.Customer;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -110,11 +111,11 @@ class CustomerXmlLoaderTest {
                 "    </person>\n" +
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        Loader loader = new CustomerXmlLoader((customer) -> fail());
-        ErrorHandler errorHandler = mock(ErrorHandler.class);
+        RecordLoader loader = new CustomerXmlLoader((customer) -> fail());
+        RecordErrorHandler errorHandler = mock(RecordErrorHandler.class);
         loader.setErrorHandler(errorHandler);
         loader.parseInput(inputStream);
-        verify(errorHandler, times(1)).handleError(eq(1L), any());
+        verify(errorHandler, times(1)).handleError(eq(1L), any(ParsingException.class));
     }
 
 
@@ -138,7 +139,7 @@ class CustomerXmlLoaderTest {
                 "    </person>\n" +
                 "</persons>";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
+        RecordLoadListener<Customer> loadListener = (RecordLoadListener<Customer>) mock(RecordLoadListener.class);
         new CustomerXmlLoader(loadListener).parseInput(inputStream);
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());

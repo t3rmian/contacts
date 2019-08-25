@@ -1,7 +1,9 @@
 package io.github.t3rmian.contacts.loader;
 
 import io.github.t3rmian.contacts.loader.exception.ParsingException;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.data.Customer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,17 +12,20 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CustomerCsvLoader implements Loader<Customer> {
+public class CustomerCsvLoader implements RecordLoader<Customer> {
+
+    private final Logger logger = LoggerFactory.getLogger(CustomerCsvLoader.class);
 
     private final ContactMapper contactMapper = new ContactMapper();
-    private final LoadListener<Customer> loadListener;
-    private ErrorHandler errorHandler;
+    private final RecordLoadListener<Customer> loadListener;
+    private RecordErrorHandler errorHandler;
+    private int lineCount;
 
-    public CustomerCsvLoader(LoadListener<Customer> loadListener) {
+    public CustomerCsvLoader(RecordLoadListener<Customer> loadListener) {
         this.loadListener = loadListener;
     }
 
-    public void setErrorHandler(ErrorHandler errorHandler) {
+    public void setErrorHandler(RecordErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
 
@@ -30,10 +35,13 @@ public class CustomerCsvLoader implements Loader<Customer> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        loadListener.onFinishRead();
+        logger.info(String.format("Finished parsing %d lines", lineCount));
     }
 
     private void parseReader(BufferedReader reader) throws IOException {
-        long lineCount = 0;
+        logger.info("Starting input parsing");
+        lineCount = 0;
         String line;
         while ((line = reader.readLine()) != null) {
             try {

@@ -1,6 +1,7 @@
 package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.loader.exception.ParsingException;
+import io.github.t3rmian.contacts.data.Customer;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -70,10 +71,10 @@ class CustomerCsvLoaderTest {
         String input = "Invalid format";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         CustomerCsvLoader customerCsvLoader = new CustomerCsvLoader((customer) -> fail());
-        ErrorHandler errorHandler = mock(ErrorHandler.class);
+        RecordErrorHandler errorHandler = mock(RecordErrorHandler.class);
         customerCsvLoader.setErrorHandler(errorHandler);
         customerCsvLoader.parseInput(inputStream);
-        verify(errorHandler, times(1)).handleError(eq(1L), any());
+        verify(errorHandler, times(1)).handleError(eq(1L), any(ParsingException.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -83,7 +84,7 @@ class CustomerCsvLoaderTest {
                 "Second -> Missing required values\n" +
                 "Third,Kowalski,12,Lublin,123123123,654 765 765,kowalski@gmail.com,jan@gmail.com";
         InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        LoadListener<Customer> loadListener = (LoadListener<Customer>) mock(LoadListener.class);
+        RecordLoadListener<Customer> loadListener = (RecordLoadListener<Customer>) mock(RecordLoadListener.class);
         new CustomerCsvLoader(loadListener).parseInput(inputStream);
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(loadListener, times(2)).onRecordRead(customerCaptor.capture());

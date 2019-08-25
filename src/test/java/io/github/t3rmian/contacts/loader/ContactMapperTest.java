@@ -1,6 +1,6 @@
 package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.model.Contact;
+import io.github.t3rmian.contacts.data.Contact;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

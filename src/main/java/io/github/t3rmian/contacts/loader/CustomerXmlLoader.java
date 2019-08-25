@@ -1,12 +1,10 @@
 package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.loader.ContactMapper;
-import io.github.t3rmian.contacts.loader.LoadListener;
-import io.github.t3rmian.contacts.loader.ErrorHandler;
-import io.github.t3rmian.contacts.loader.Loader;
 import io.github.t3rmian.contacts.loader.exception.ParsingException;
-import io.github.t3rmian.contacts.model.Contact;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.data.Contact;
+import io.github.t3rmian.contacts.data.Customer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -23,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class CustomerXmlLoader extends DefaultHandler implements Loader<Customer> {
+public class CustomerXmlLoader extends DefaultHandler implements RecordLoader<Customer> {
+
+    private final Logger logger = LoggerFactory.getLogger(CustomerCsvLoader.class);
+
     private final ContactMapper contactMapper = new ContactMapper();
     private Customer customer;
     private StringBuilder data;
@@ -35,21 +36,22 @@ public class CustomerXmlLoader extends DefaultHandler implements Loader<Customer
     private boolean parsingSurname = false;
     private boolean parsingContacts = false;
 
-    private final LoadListener<Customer> loadListener;
+    private final RecordLoadListener<Customer> loadListener;
 
-    private ErrorHandler errorHandler;
+    private RecordErrorHandler errorHandler;
 
-    public CustomerXmlLoader(LoadListener<Customer> loadListener) {
+    public CustomerXmlLoader(RecordLoadListener<Customer> loadListener) {
         this.loadListener = loadListener;
     }
 
     @Override
-    public void setErrorHandler(ErrorHandler errorHandler) {
+    public void setErrorHandler(RecordErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
 
     @Override
     public void parseInput(InputStream inputStream) {
+        recordCount = 0;
         SAXParserFactory parserFactory = SAXParserFactory.newInstance();
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         try {
@@ -57,10 +59,13 @@ public class CustomerXmlLoader extends DefaultHandler implements Loader<Customer
                     .getResourceAsStream("customer_contacts.xsd")));
             parserFactory.setSchema(schema);
             SAXParser parser = parserFactory.newSAXParser();
+            logger.info("Starting input parsing");
             parser.parse(inputStream, this);
         } catch (IOException | ParserConfigurationException | SAXException e) {
             throw new RuntimeException(e);
         }
+        loadListener.onFinishRead();
+        logger.info(String.format("Finished parsing %d records", recordCount));
     }
 
     @Override

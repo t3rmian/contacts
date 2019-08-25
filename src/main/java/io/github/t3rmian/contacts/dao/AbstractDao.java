@@ -10,6 +10,10 @@ import java.util.Properties;
 
 public abstract class AbstractDao {
 
+    /*
+     * Spring-like way of overriding application properties. Allows to pass data source parameters during execution time
+     * instead of compile time.
+     */
     static {
         try (InputStream inputStream = AbstractDao.class.getClassLoader().getResourceAsStream("data-source.properties")) {
             Properties properties = new Properties();

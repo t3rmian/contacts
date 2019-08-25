@@ -1,7 +1,7 @@
 package io.github.t3rmian.contacts.dao;
 
-import io.github.t3rmian.contacts.model.Contact;
-import io.github.t3rmian.contacts.model.Customer;
+import io.github.t3rmian.contacts.data.Contact;
+import io.github.t3rmian.contacts.data.Customer;
 
 import java.sql.*;
 import java.util.Iterator;
@@ -9,6 +9,11 @@ import java.util.List;
 
 public class CustomerDao extends AbstractDao {
 
+    /**
+     *
+     * @param customers to save in one batch, together with all contacts
+     * @throws SQLException in case of errors, will rollback whole batch
+     */
     void batchSaveAll(List<Customer> customers) throws SQLException {
         String customerSql = "insert into CUSTOMERS (NAME, SURNAME, AGE) values (?, ?, ?)";
         try (Connection connection = getConnection()) {

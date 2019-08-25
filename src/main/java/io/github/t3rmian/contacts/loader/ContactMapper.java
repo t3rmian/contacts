@@ -1,6 +1,6 @@
 package io.github.t3rmian.contacts.loader;
 
-import io.github.t3rmian.contacts.model.Contact;
+import io.github.t3rmian.contacts.data.Contact;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
